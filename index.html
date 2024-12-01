@@ -1,115 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Music Player</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #222;
-      color: white;
-      text-align: center;
-    }
-    #player {
-      margin-top: 50px;
-    }
-    #trackName {
-      font-size: 20px;
-      margin-top: 10px;
-    }
-    button {
-      background-color: #444;
-      color: white;
-      border: none;
-      padding: 10px;
-      margin: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #555;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Web App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #f3f4f6;
+        }
+        .container {
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+        }
+        h1 {
+            color: #2f2f2f;
+        }
+        p {
+            color: #6b6b6b;
+        }
+        .btn {
+            background-color: #0088cc;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-  <h1>Music Player</h1>
-  <div id="player">
-    <audio id="audioPlayer" controls>
-      Your browser does not support the audio element.
-    </audio>
-    <div id="trackName">No track playing</div>
-    <button id="prevTrack">Previous</button>
-    <button id="playPause">Play</button>
-    <button id="nextTrack">Next</button>
-  </div>
 
-  <!-- Подключаем библиотеку для Telegram Web App -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<div class="container">
+    <h1>Данные о пользователе</h1>
+    <p id="userData">Загрузка...</p>
+    <a href="#" class="btn" id="closeBtn">Закрыть</a>
+</div>
 
-  <script>
+<script>
     // Инициализация Telegram Web App
-    const tg = window.Telegram.WebApp;
+    Telegram.WebApp.init();
 
-    // Настройка кнопки для закрытия Telegram Web App (если нужно)
-    tg.MainButton.setParams({
-      text: "Close Player"
-    });
-    tg.MainButton.onClick(() => {
-      tg.close();
-    });
+    // Получение данных о пользователе
+    const user = Telegram.WebApp.initDataUnsafe;
 
-    // Плеер
-    let audioPlayer = document.getElementById('audioPlayer');
-    let trackName = document.getElementById('trackName');
-    let playPauseButton = document.getElementById('playPause');
-    let prevTrackButton = document.getElementById('prevTrack');
-    let nextTrackButton = document.getElementById('nextTrack');
-
-    let tracks = [];
-    let currentTrackIndex = 0;
-
-    // Получаем список треков с сервера
-    fetch('https://6af2-94-181-67-166.ngrok-free.app/music')
-      .then(response => response.json())
-      .then(data => {
-        tracks = data.tracks;
-        loadTrack(currentTrackIndex);
-      });
-
-    function loadTrack(index) {
-      if (tracks.length > 0) {
-        audioPlayer.src = tracks[index].url;
-        trackName.textContent = tracks[index].name;
-        audioPlayer.load();
-      }
+    // Функция для отображения данных о пользователе
+    function displayUserData() {
+        const userDataElement = document.getElementById('userData');
+        userDataElement.innerHTML = `
+            <strong>ID:</strong> ${user.user.id} <br>
+            <strong>Имя:</strong> ${user.user.first_name} <br>
+            <strong>Фамилия:</strong> ${user.user.last_name} <br>
+            <strong>Username:</strong> @${user.user.username} <br>
+            <strong>Язык:</strong> ${user.user.language_code} <br>
+        `;
     }
 
-    playPauseButton.addEventListener('click', () => {
-      if (audioPlayer.paused) {
-        audioPlayer.play();
-        playPauseButton.textContent = 'Pause';
-      } else {
-        audioPlayer.pause();
-        playPauseButton.textContent = 'Play';
-      }
-    });
+    // Вызов функции для отображения данных
+    displayUserData();
 
-    prevTrackButton.addEventListener('click', () => {
-      currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
-      loadTrack(currentTrackIndex);
-      audioPlayer.play();
-      playPauseButton.textContent = 'Pause';
-    });
+    // Закрытие Web App
+    document.getElementById('closeBtn').onclick = function() {
+        Telegram.WebApp.close();
+    }
+</script>
 
-    nextTrackButton.addEventListener('click', () => {
-      currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-      loadTrack(currentTrackIndex);
-      audioPlayer.play();
-      playPauseButton.textContent = 'Pause';
-    });
-
-    // Обновляем состояние кнопки Telegram Web App
-    tg.ready();
-  </script>
 </body>
 </html>
