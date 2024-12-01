@@ -1,140 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Music Player</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            height: 100vh;
-        }
-        .player-container {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background-color: #333;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 20px;
-        }
-        .player-container button {
-            background-color: #0088cc;
-            border: none;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .player-container button:hover {
-            background-color: #005f8c;
-        }
-        .track-title {
-            flex: 1;
-            text-align: center;
-            font-size: 16px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Музыкальный плеер</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    .player {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+    .controls {
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #ddd;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 <body>
-    <h1>Dynamic Music Player v0.4</h1>
-    <p>Добавляйте новые треки в папку "music", и они будут доступны автоматически!</p>
-
-    <!-- Аудиоплеер -->
-    <audio id="audioPlayer"></audio>
-
-    <!-- Контейнер плеера -->
-    <div class="player-container">
-        <button id="prevTrackButton">⏮ Prev</button>
-        <div class="track-title" id="trackTitle">No track playing</div>
-        <button id="playPauseButton">▶ Play</button>
-        <button id="nextTrackButton">⏭ Next</button>
+  <div class="player">
+    <h1 id="track-name">Выберите песню</h1>
+    <audio id="audio-player" controls></audio>
+    <div class="controls">
+      <button id="prev-button">Предыдущий</button>
+      <button id="play-pause-button">Воспроизвести</button>
+      <button id="next-button">Следующий</button>
     </div>
+  </div>
+  
+  <script>
+    let currentTrackIndex = 0;
+    let tracks = [];
+    const audioPlayer = document.getElementById('audio-player');
+    const trackName = document.getElementById('track-name');
+    const playPauseButton = document.getElementById('play-pause-button');
+    const prevButton = document.getElementById('prev-button');
+    const nextButton = document.getElementById('next-button');
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+    // Функция для загрузки списка треков с сервера
+    async function loadTracks() {
+      const response = await fetch('https://your-ngrok-url/track-list');
+      tracks = await response.json();
+      loadTrack(currentTrackIndex);
+    }
 
-        let tracks = []; // Список треков
-        let currentTrackIndex = 0; // Индекс текущего трека
-        const audioPlayer = document.getElementById('audioPlayer');
-        const trackTitle = document.getElementById('trackTitle');
-        const playPauseButton = document.getElementById('playPauseButton');
-        const prevTrackButton = document.getElementById('prevTrackButton');
-        const nextTrackButton = document.getElementById('nextTrackButton');
+    // Функция для загрузки текущего трека
+    function loadTrack(index) {
+      if (tracks.length > 0) {
+        const track = tracks[index];
+        audioPlayer.src = track.url;
+        trackName.textContent = track.name;
+        audioPlayer.play();
+      }
+    }
 
-        // Загрузка треков с сервера
-        async function loadTracks() {
-            try {
-                const response = await fetch('/api/tracks');
-                tracks = await response.json();
-                if (tracks.length > 0) {
-                    updateTrack();
-                } else {
-                    trackTitle.textContent = "No tracks available";
-                }
-            } catch (error) {
-                console.error("Ошибка загрузки треков:", error);
-                trackTitle.textContent = "Error loading tracks";
-            }
-        }
+    // Переключить на следующий трек
+    function nextTrack() {
+      currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
+      loadTrack(currentTrackIndex);
+    }
 
-        // Обновление информации о треке
-        function updateTrack() {
-            const currentTrack = tracks[currentTrackIndex];
-            audioPlayer.src = currentTrack.src;
-            trackTitle.textContent = currentTrack.title;
-        }
+    // Переключить на предыдущий трек
+    function prevTrack() {
+      currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
+      loadTrack(currentTrackIndex);
+    }
 
-        // Воспроизведение/пауза
-        playPauseButton.addEventListener('click', () => {
-            if (audioPlayer.paused) {
-                audioPlayer.play();
-                playPauseButton.textContent = "⏸ Pause";
-            } else {
-                audioPlayer.pause();
-                playPauseButton.textContent = "▶ Play";
-            }
-        });
+    // Тоггл воспроизведения / паузы
+    function togglePlayPause() {
+      if (audioPlayer.paused) {
+        audioPlayer.play();
+        playPauseButton.textContent = 'Пауза';
+      } else {
+        audioPlayer.pause();
+        playPauseButton.textContent = 'Воспроизвести';
+      }
+    }
 
-        // Следующий трек
-        nextTrackButton.addEventListener('click', () => {
-            currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-            updateTrack();
-            audioPlayer.play();
-            playPauseButton.textContent = "⏸ Pause";
-        });
+    playPauseButton.addEventListener('click', togglePlayPause);
+    prevButton.addEventListener('click', prevTrack);
+    nextButton.addEventListener('click', nextTrack);
 
-        // Предыдущий трек
-        prevTrackButton.addEventListener('click', () => {
-            currentTrackIndex = (currentTrackIndex - 1 + tracks.length) % tracks.length;
-            updateTrack();
-            audioPlayer.play();
-            playPauseButton.textContent = "⏸ Pause";
-        });
-
-        // Автопереход к следующему треку
-        audioPlayer.addEventListener('ended', () => {
-            currentTrackIndex = (currentTrackIndex + 1) % tracks.length;
-            updateTrack();
-            audioPlayer.play();
-        });
-
-        // Инициализация
-        loadTracks();
-    </script>
+    window.onload = loadTracks;
+  </script>
 </body>
 </html>
