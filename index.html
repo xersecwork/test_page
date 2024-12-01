@@ -1,16 +1,61 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>test_app</title>
+    <title>Telegram Web App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="./scripts.js"></script>
-    <link rel="stylesheet" href="./css/index.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #0088cc;
+            color: white;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #005f8c;
+        }
+    </style>
 </head>
 <body>
+    <h1>Play Music in Telegram</h1>
+    <button id="playMusicButton">Play Music</button>
+
     <script>
-        let tg = window.Telegram.WebApp;
+        // Инициализация Telegram Web App SDK
+        const tg = window.Telegram.WebApp;
+
+        // Кнопка запуска музыки
+        document.getElementById('playMusicButton').addEventListener('click', () => {
+            // Ссылка на аудиофайл
+            const audioUrl = "https://example.com/path/to/your/audio.mp3"; // Замените на реальный URL аудиофайла
+
+            // Отправляем данные в Telegram для запуска встроенного плеера
+            tg.sendData(JSON.stringify({
+                type: "audio",
+                url: audioUrl,
+                title: "Sample Track",
+                artist: "Unknown Artist"
+            }));
+
+            // Отображаем сообщение пользователю
+            tg.showAlert("Музыка будет воспроизведена через встроенный плеер Telegram!");
+        });
+
+        // Автоматически расширяем Web App
+        tg.expand();
     </script>
 </body>
 </html>
