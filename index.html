@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Music Player</title>
+    <title>Dynamic Music Player</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
@@ -50,8 +50,8 @@
     </style>
 </head>
 <body>
-    <h1>Music Player v0.3</h1>
-    <p>Переключайте треки и управляйте воспроизведением!</p>
+    <h1>Dynamic Music Player v0.4</h1>
+    <p>Добавляйте новые треки в папку "music", и они будут доступны автоматически!</p>
 
     <!-- Аудиоплеер -->
     <audio id="audioPlayer"></audio>
@@ -68,19 +68,29 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Массив песен (должен совпадать с именами файлов в папке "music")
-        const tracks = [
-            { title: "Track 1", src: "music/track1.mp3" },
-            { title: "Track 2", src: "music/track2.mp3" },
-            { title: "Track 3", src: "music/track3.mp3" },
-        ];
-
+        let tracks = []; // Список треков
         let currentTrackIndex = 0; // Индекс текущего трека
         const audioPlayer = document.getElementById('audioPlayer');
         const trackTitle = document.getElementById('trackTitle');
         const playPauseButton = document.getElementById('playPauseButton');
         const prevTrackButton = document.getElementById('prevTrackButton');
         const nextTrackButton = document.getElementById('nextTrackButton');
+
+        // Загрузка треков с сервера
+        async function loadTracks() {
+            try {
+                const response = await fetch('/api/tracks');
+                tracks = await response.json();
+                if (tracks.length > 0) {
+                    updateTrack();
+                } else {
+                    trackTitle.textContent = "No tracks available";
+                }
+            } catch (error) {
+                console.error("Ошибка загрузки треков:", error);
+                trackTitle.textContent = "Error loading tracks";
+            }
+        }
 
         // Обновление информации о треке
         function updateTrack() {
@@ -124,7 +134,7 @@
         });
 
         // Инициализация
-        updateTrack();
+        loadTracks();
     </script>
 </body>
 </html>
