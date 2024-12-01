@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram Web App</title>
+    <title>Telegram Web App Music</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body {
@@ -14,10 +14,11 @@
             height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
         }
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 12px 24px;
+            font-size: 18px;
             cursor: pointer;
             border: none;
             background-color: #0088cc;
@@ -37,24 +38,26 @@
         // Инициализация Telegram Web App SDK
         const tg = window.Telegram.WebApp;
 
-        // Кнопка запуска музыки
-        document.getElementById('playMusicButton').addEventListener('click', () => {
-            // Ссылка на аудиофайл
-            const audioUrl = "https://example.com/path/to/your/audio.mp3"; // Замените на реальный URL аудиофайла
+        // Полный URL аудиофайла
+        const audioUrl = tg.initDataUnsafe.query_id 
+            ? "https://xersecwork.github.io/test_page/music_1.mp3"
+            : "music_1.mp3"; // Локальная копия для тестирования вне Telegram.
 
-            // Отправляем данные в Telegram для запуска встроенного плеера
+        // Обработчик кнопки
+        document.getElementById('playMusicButton').addEventListener('click', () => {
+            // Отправляем данные в Telegram
             tg.sendData(JSON.stringify({
                 type: "audio",
                 url: audioUrl,
-                title: "Sample Track",
+                title: "My Track",
                 artist: "Unknown Artist"
             }));
 
-            // Отображаем сообщение пользователю
+            // Уведомляем пользователя
             tg.showAlert("Музыка будет воспроизведена через встроенный плеер Telegram!");
         });
 
-        // Автоматически расширяем Web App
+        // Расширяем Web App
         tg.expand();
     </script>
 </body>
